@@ -9,6 +9,6 @@ AI-Town allows users to step into a virtual town filled with diverse AI characte
 ## 🎮 Key Features
 
 - **AI Character Interactions**: Engage with a wide range of AI characters, each with distinct personalities and dialog options.
-- **Customizable Characters**: Choose your own character among a variety of characters in the town.
+- **Character Selection**: Choose your own character among a variety of characters in the town.
 - **Town Customization**: Modify the appearance of buildings, landscapes, and other elements to make the town feel like your own.
 - **Dynamic Environment**: Enjoy a town that reacts to user interactions, making every experience unique.
