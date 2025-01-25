@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const axios = require('axios'); // Import Axios
 const db = require('./database'); // Import the SQLite database
 
 const app = express();
@@ -9,6 +10,68 @@ const PORT = 3000;
 // Middleware
 app.use(cors()); // Allow cross-origin requests
 app.use(bodyParser.json()); // Parse JSON bodies
+
+// Hugging Face API configuration
+const HF_API_URL = 'https://api-inference.huggingface.co/models/gpt2'; // Replace with the model you choose
+const HF_API_KEY = 'YOUR_HUGGING_FACE_API_KEY'; // Replace with your Hugging Face API key
+
+// Define characters and their roles
+const characters = {
+    farmer: {
+        role: 'farmer',
+        personality: 'You are a knowledgeable farmer who loves to share tips about agriculture.',
+        history: [],
+    },
+    teacher: {
+        role: 'teacher',
+        personality: 'You are a patient teacher who enjoys explaining concepts to students.',
+        history: [],
+    },
+    // Add more characters as needed
+};
+
+// Function to get AI response from Hugging Face
+async function getAIResponse(prompt) {
+    try {
+        return "Ayo Whats up my guy!";
+        // const response = await axios.post(HF_API_URL, {
+        //     inputs: prompt,
+        // }, {
+        //     headers: {
+        //         'Authorization': `Bearer ${HF_API_KEY}`,
+        //         'Content-Type': 'application/json',
+        //     },
+        // });
+        // return response.data[0].generated_text; // Adjust based on the API response structure
+    } catch (error) {
+        console.error('Error getting AI response:', error.message);
+        return 'Sorry, I could not generate a response.';
+    }
+}
+
+// Endpoint to handle chat between characters
+app.post('/chat', async (req, res) => {
+    const { message, characterRole } = req.body;
+
+    // Get the character's context and history
+    const character = characters[characterRole];
+    if (!character) {
+        return res.status(400).json({ response: 'Character not found.' });
+    }
+
+    // Construct the prompt with personality and previous messages
+    const prompt = `${character.personality}\nPrevious messages:\n${character.history.join('\n')}\nUser: ${message}\nAI:`;
+
+    // Get AI response
+    const aiResponse = await getAIResponse(prompt);
+
+    // Update the character's history
+    character.history.push(`User: ${message}`);
+    character.history.push(`AI: ${aiResponse}`);
+
+    // Respond to the client
+    res.json({ response: aiResponse });
+});
 
 // Endpoint to handle login
 app.post('/login', (req, res) => {
