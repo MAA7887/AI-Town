@@ -92,26 +92,18 @@
             background-image: url('floor.jpg'); /* Use your image for the floor */
             background-size: cover;
             background-position: center;
-            position: relative;
+            position: relative; /* Ensure the character is positioned correctly inside the cell */
         }
 
-        td.empty {
-            background-color: transparent;
-        }
-
-        td.filled {
-            background-color: #2C4F6B;
-        }
-
-        /* Character image style */
         .character {
             width: 100%;       /* Fill the entire width of the cell */
             height: 100%;      /* Fill the entire height of the cell */
             object-fit: cover; /* Ensure the image covers the cell without distortion */
-            display: block;    /* Remove any inline-block behavior that adds extra space */
-            margin: 0;         /* Remove any margin */
-            padding: 0;        /* Remove any padding */
-            transition: transform 0.5s ease;
+            position: absolute; /* Position the character absolutely within the cell */
+            top: 0;            /* Ensure it starts from the top of the cell */
+            left: 0;           /* Ensure it starts from the left of the cell */
+            z-index: 1;        /* Ensure the character stays above the floor background */
+            transition: transform 0.5s ease; /* Smooth transition for movement */
         }
     </style>
 </head>
@@ -124,8 +116,8 @@
     <div class="rectangle-container">
         <h1>AI TOWN</h1>
     </div>
-	
-	<!-- Dropdown to select Hero Folder -->
+    
+    <!-- Dropdown to select Hero Folder -->
     <select id="heroFolderSelect">
         <option value="hero1">Hero 1</option>
         <option value="hero2">Hero 2</option>
@@ -156,10 +148,11 @@
     </div>
 
     <script>
-    	// Function to get the selected folder
+        // Function to get the selected folder
         function getSelectedHeroFolder() {
             return document.getElementById('heroFolderSelect').value;
         }
+
         let heroFolder = getSelectedHeroFolder(); // Get folder selected by user
         const table = document.querySelector('table');
         const tableContainer = document.getElementById('tableContainer');
@@ -178,7 +171,7 @@
             'hero_right_2.png', 'hero_right_1.png', 'hero_right_2.png', 
             'hero_right_3.png', 'hero_right_2.png', 'hero_right_1.png'
         ];
-		const left_imageSequence = [
+        const left_imageSequence = [
             'hero_left_1.png', 'hero_left_2.png', 'hero_left_3.png', 
             'hero_left_2.png', 'hero_left_1.png', 'hero_left_2.png', 
             'hero_left_3.png', 'hero_left_2.png', 'hero_left_1.png'
@@ -219,8 +212,8 @@
         }
 
         // Function to move the character to a new adjacent position incrementally
-        function moveCharacter() {	
-        	heroFolder = getSelectedHeroFolder(); // Get folder selected by user
+        function moveCharacter() {    
+            heroFolder = getSelectedHeroFolder(); // Get folder selected by user
             if (moveCount < 6) {
                 moveCount++;
                 var movementDistance = 5 * moveCount; // Move by 25% of the cell width (25px) each time
@@ -240,9 +233,8 @@
                         characterElement.src = `${heroFolder}/${right_imageSequence[moveCount]}`;
                         break;
                 }
-                //characterElement.src = imageSequence[moveCount]; // Update the image source based on the pattern
 
-                // Apply the incremental move to the character
+                // Apply the movement using the translate function
                 switch (newPosition.direction) {
                     case 'up':
                         characterElement.style.transform = `translateY(${-(movementDistance)}px)`;
@@ -257,20 +249,17 @@
                         characterElement.style.transform = `translateX(${movementDistance}px)`;
                         break;
                 }
-                //characterElement.style.transform = `translateX(${movementDistance}px)`;
 
                 // Continue moving every 250ms
                 setTimeout(moveCharacter, 250);
             } else {
                 // After completing the move, change the position and reset transform
-                //newPosition = getRandomAdjacentPosition();
-                //table.rows[characterPosition.row].cells[characterPosition.col].removeChild(characterElement);
+                table.rows[characterPosition.row].cells[characterPosition.col].removeChild(characterElement);
 
                 // Update the position
-                table.rows[characterPosition.row].cells[characterPosition.col].removeChild(characterElement);
                 characterPosition = { row: newPosition.row, col: newPosition.col};
-                characterElement.style.transform = `translateX(${0}px)`;
-                characterElement.style.transform = `translateY(${0}px)`;
+
+                // Reset the character's image to the final image for the direction
                 switch (newPosition.direction) {
                     case 'up':
                         characterElement.src = `${heroFolder}/${up_imageSequence[8]}`;
@@ -285,12 +274,16 @@
                         characterElement.src = `${heroFolder}/${right_imageSequence[8]}`;
                         break;
                 }
-				table.rows[characterPosition.row].cells[characterPosition.col].appendChild(characterElement);
-				newPosition = getRandomAdjacentPosition();
-				
-                // Reset the character's transform and update image direction
+
+                // Reset the transform to initial position
+                characterElement.style.transform = `translateX(0) translateY(0)`;
+
+                // Append the character to the new cell
+                table.rows[characterPosition.row].cells[characterPosition.col].appendChild(characterElement);
+
+                newPosition = getRandomAdjacentPosition();
                 moveCount = 0; // Reset move count after reaching a new position
-                setTimeout(moveCharacter, 250);
+                setTimeout(moveCharacter, 250); // Continue movement after reset
             }
         }
 
