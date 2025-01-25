@@ -14,14 +14,16 @@
         td {
             width: 100px;
             height: 100px;
-            padding: 0;  /* Ensure no padding in the cell */
+            padding: 0;
             text-align: center;
             vertical-align: middle;
+            position: relative;
         }
         img.character {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures the image fills the cell completely */
+            object-fit: cover;
+            transition: transform 0.5s ease;
         }
     </style>
 </head>
@@ -29,20 +31,44 @@
 
 <table>
     <tr>
-        <td id="cell1"><img id="hero" class="character" src="hero_right.png" alt="Hero"></td>
+        <td id="cell1">
+            <img id="hero" class="character" src="hero_right_1.png" alt="Hero">
+        </td>
         <td id="cell2"></td>
     </tr>
 </table>
 
 <script>
-    // Function to move the character after 3 seconds
-    setTimeout(function() {
-        var hero = document.getElementById("hero");
-        var cell2 = document.getElementById("cell2");
-        
-        // Move the character to the second cell
-        cell2.appendChild(hero);
-    }, 3000); // 3000 milliseconds = 3 seconds
+    let moveCount = 0; // Track the number of moves
+    let hero = document.getElementById("hero");
+
+    // Array of images in the desired order
+    const imageSequence = ["hero_right_1.png", "hero_right_2.png", "hero_right_3.png", "hero_right_2.png", "hero_right_1.png", "hero_right_2.png", "hero_right_3.png", "hero_right_2.png", "hero_right_1.png"];
+
+    // Function to move the character incrementally
+    function moveCharacter() {
+        if (moveCount < 8) {
+            moveCount++;
+            var movementDistance = 12.5 * moveCount; // Move by 25% of the cell width (25px) each time
+
+            // Change the image based on the move count
+            hero.src = imageSequence[moveCount]; // Update the image source based on the pattern
+
+            // Apply the incremental move to the character
+            hero.style.transform = `translateX(${movementDistance}px)`;
+
+            // Continue moving every 1 second (500ms transition time + 500ms delay)
+            setTimeout(moveCharacter, 250);
+        } else {
+            // After 4 moves, move the character to the second cell
+            setTimeout(function() {
+                var cell2 = document.getElementById("cell2");
+            }, 500); // Wait for the last move transition to finish
+        }
+    }
+
+    // Start the movement after 3 seconds
+    setTimeout(moveCharacter, 500); // Wait 3 seconds before starting the movement
 </script>
 
 </body>
