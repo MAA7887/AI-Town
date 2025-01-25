@@ -89,7 +89,7 @@
         td {
             width: 30px; /* Set the width of each cell */
             height: 30px; /* Set the height of each cell */
-            background-image: url('floor1.jpg'); /* Use your image for the floor */
+            background-image: url('floor.jpg'); /* Use your image for the floor */
             background-size: cover;
             background-position: center;
             position: relative;
@@ -124,7 +124,17 @@
     <div class="rectangle-container">
         <h1>AI TOWN</h1>
     </div>
-
+	
+	<!-- Dropdown to select Hero Folder -->
+    <select id="heroFolderSelect">
+        <option value="hero1">Hero 1</option>
+        <option value="hero2">Hero 2</option>
+        <option value="hero3">Hero 3</option>
+        <option value="hero4">Hero 4</option>
+        <option value="hero5">Hero 5</option>
+        <option value="hero6">Hero 6</option>
+    </select>
+    
     <!-- Table Container -->
     <div class="table-container" id="tableContainer">
         <table>
@@ -146,12 +156,17 @@
     </div>
 
     <script>
+    	// Function to get the selected folder
+        function getSelectedHeroFolder() {
+            return document.getElementById('heroFolderSelect').value;
+        }
+        let heroFolder = getSelectedHeroFolder(); // Get folder selected by user
         const table = document.querySelector('table');
         const tableContainer = document.getElementById('tableContainer');
         
         // Create an image element for the character
         const characterElement = document.createElement('img');
-        characterElement.src = 'hero_right_1.png'; // Initial image (facing right)
+        characterElement.src = `${heroFolder}/hero_down_1.png`; // Initial image (facing right)
         characterElement.classList.add('character');
         
         // Append the character to the initial position
@@ -163,7 +178,7 @@
             'hero_right_2.png', 'hero_right_1.png', 'hero_right_2.png', 
             'hero_right_3.png', 'hero_right_2.png', 'hero_right_1.png'
         ];
-	const left_imageSequence = [
+		const left_imageSequence = [
             'hero_left_1.png', 'hero_left_2.png', 'hero_left_3.png', 
             'hero_left_2.png', 'hero_left_1.png', 'hero_left_2.png', 
             'hero_left_3.png', 'hero_left_2.png', 'hero_left_1.png'
@@ -205,6 +220,7 @@
 
         // Function to move the character to a new adjacent position incrementally
         function moveCharacter() {	
+        	heroFolder = getSelectedHeroFolder(); // Get folder selected by user
             if (moveCount < 6) {
                 moveCount++;
                 var movementDistance = 5 * moveCount; // Move by 25% of the cell width (25px) each time
@@ -212,16 +228,16 @@
                 // Change the image based on the move count
                 switch (newPosition.direction) {
                     case 'up':
-                        characterElement.src = up_imageSequence[moveCount];
+                        characterElement.src = `${heroFolder}/${up_imageSequence[moveCount]}`;
                         break;
                     case 'down':
-                        characterElement.src = down_imageSequence[moveCount];
+                        characterElement.src = `${heroFolder}/${down_imageSequence[moveCount]}`;
                         break;
                     case 'left':
-                        characterElement.src = left_imageSequence[moveCount];
+                        characterElement.src = `${heroFolder}/${left_imageSequence[moveCount]}`;
                         break;
                     case 'right':
-                        characterElement.src = right_imageSequence[moveCount];
+                        characterElement.src = `${heroFolder}/${right_imageSequence[moveCount]}`;
                         break;
                 }
                 //characterElement.src = imageSequence[moveCount]; // Update the image source based on the pattern
@@ -257,16 +273,16 @@
                 characterElement.style.transform = `translateY(${0}px)`;
                 switch (newPosition.direction) {
                     case 'up':
-                        characterElement.src = up_imageSequence[8];
+                        characterElement.src = `${heroFolder}/${up_imageSequence[8]}`;
                         break;
                     case 'down':
-                        characterElement.src = down_imageSequence[8];
+                        characterElement.src = `${heroFolder}/${down_imageSequence[8]}`;
                         break;
                     case 'left':
-                        characterElement.src = left_imageSequence[8];
+                        characterElement.src = `${heroFolder}/${left_imageSequence[8]}`;
                         break;
                     case 'right':
-                        characterElement.src = right_imageSequence[8];
+                        characterElement.src = `${heroFolder}/${right_imageSequence[8]}`;
                         break;
                 }
 				table.rows[characterPosition.row].cells[characterPosition.col].appendChild(characterElement);
