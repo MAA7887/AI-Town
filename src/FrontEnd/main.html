@@ -43,6 +43,7 @@
             height: 110px;
             padding: 4px 0px;
             margin-top: 20px;
+            position: relative; /* Make it relative for positioning the sidebar */
         }
 
         .rectangle-container h1 {
@@ -190,6 +191,51 @@
             transition: transform 0.5s ease; /* Smooth transition for movement */
             cursor: pointer;   /* Change cursor to pointer for the character */
         }
+
+        /* Sidebar styles for environmental elements */
+        .sidebar {
+            position: absolute; /* Change to absolute positioning */
+            top: 155px; /* Move up 19 pixels from 174px */
+            left: -209px; /* Move left 38 pixels from -171px */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 10; /* Ensure the sidebar is above other elements */
+        }
+
+        .sidebar img {
+            width: 40px; /* Size of the icons */
+            height: 40px; /* Size of the icons */
+            margin: 5px 0; /* Space between icons */
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .sidebar img:hover {
+            transform: scale(1.1); /* Slightly enlarge on hover */
+        }
+
+        /* Style for the 3x2 environmental element */
+        .large-element {
+            position: absolute; /* Position absolutely within the table container */
+            width: 90px; /* 3 cells wide (3 * 30px) */
+            height: 60px; /* 2 cells tall (2 * 30px) */
+            object-fit: cover; /* Ensure the image covers the area without distortion */
+            z-index: 5; /* Ensure it's above the table */
+        }
+
+        /* Style for the 2x2 environmental elements */
+        .small-element {
+            position: absolute; /* Position absolutely within the table container */
+            width: 60px; /* 2 cells wide (2 * 30px) */
+            height: 60px; /* 2 cells tall (2 * 30px) */
+            object-fit: cover; /* Ensure the image covers the area without distortion */
+            z-index: 5; /* Ensure it's above the table */
+        }
     </style>
 </head>
 <body>
@@ -200,8 +246,15 @@
     <!-- Rectangle Container -->
     <div class="rectangle-container">
         <h1>AI TOWN</h1>
+
+        <!-- Sidebar for Environmental Elements -->
+        <div class="sidebar">
+            <img src="map_add_1.png" id="treeIcon" alt="Tree" title="Tree" />
+            <img src="map_add_2.png" id="lakeIcon" alt="Lake" title="Lake" />
+            <img src="map_add_3.png" id="rockIcon" alt="Rock" title="Rock" /> <!-- New icon added -->
+        </div>
     </div>
-    
+
     <!-- Chat Container -->
     <div class="chat-container" id="chatContainer" style="display: none;"> <!-- Ensure it's hidden initially -->
         <button class="close-chat-btn" id="closeChatButton">&times;</button>
@@ -513,6 +566,73 @@
         // Start the movement every 2 seconds
         setInterval(moveCharacters, 2000); // Move characters every 2 seconds
 
+        // Environmental element placement
+        let selectedElement = null;
+
+        // Select environmental element on click
+        document.getElementById('treeIcon').addEventListener('click', () => {
+            selectedElement = 'tree';
+            tableContainer.style.cursor = 'url(map_add_1.png), auto'; // Change cursor to tree icon
+        });
+
+        document.getElementById('lakeIcon').addEventListener('click', () => {
+            selectedElement = 'lake';
+            tableContainer.style.cursor = 'url(map_add_2.png), auto'; // Change cursor to lake icon
+        });
+
+        // Select rock environmental element
+        document.getElementById('rockIcon').addEventListener('click', () => {
+            selectedElement = 'rock';
+            tableContainer.style.cursor = 'url(map_add_3.png), auto'; // Change cursor to rock icon
+        });
+
+        // Place environmental element on map click
+        tableContainer.addEventListener('click', (event) => {
+            if (selectedElement) {
+                const rect = table.getBoundingClientRect();
+                const x = event.clientX - rect.left; // X position relative to the table
+                const y = event.clientY - rect.top; // Y position relative to the table
+                const row = Math.floor(y / 30); // Assuming each cell is 30px high
+                const col = Math.floor(x / 30); // Assuming each cell is 30px wide
+
+                // Check if the selected position and the next row and column are valid
+                if (selectedElement === 'rock') {
+                    // Ensure it fits within bounds for 3 wide and 2 tall
+                    if (row >= 0 && row < 29 && col >= 0 && col < 48) {
+                        const elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_3.png'; // Use the rock image
+                        elementImg.classList.add('large-element'); // Add class for styling
+                        elementImg.style.left = `${col * 30}px`; // Position based on cell size
+                        elementImg.style.top = `${row * 30}px`; // Position based on cell size
+
+                        // Append the image to the table container
+                        tableContainer.appendChild(elementImg);
+                    }
+                } else {
+                    // For tree and lake, maintain the 2x2 size
+                    if (row >= 0 && row < 29 && col >= 0 && col < 49) {
+                        const elementImg = document.createElement('img');
+                        elementImg.src = selectedElement === 'tree' ? 'map_add_1.png' : 'map_add_2.png'; // Use the correct image
+                        elementImg.classList.add('small-element'); // Add class for 2x2 styling
+                        elementImg.style.left = `${col * 30}px`; // Position based on cell size
+                        elementImg.style.top = `${row * 30}px`; // Position based on cell size
+
+                        // Append the image to the table container
+                        tableContainer.appendChild(elementImg);
+                    }
+                }
+
+                // Reset the selected element so it can't be placed again until re-selected
+                selectedElement = null;
+                tableContainer.style.cursor = 'grab'; // Reset cursor back to grab
+            }
+        });
+
+        // Reset cursor when not placing elements
+        tableContainer.addEventListener('mouseleave', () => {
+            tableContainer.style.cursor = 'grab'; // Reset cursor back to grab
+        });
+
         // Scroll drag functionality
         let isDragging = false;
         let startX, startY;
@@ -540,11 +660,6 @@
         tableContainer.addEventListener('mouseup', () => {
             isDragging = false;
             tableContainer.style.cursor = 'grab'; // Reset cursor back to grab
-        });
-
-        tableContainer.addEventListener('mouseleave', () => {
-            isDragging = false;
-            tableContainer.style.cursor = 'grab'; // Reset cursor if mouse leaves the container
         });
     </script>
 
