@@ -11,8 +11,6 @@ const PORT = 3000;
 app.use(cors()); // Allow cross-origin requests
 app.use(bodyParser.json()); // Parse JSON bodies
 
-
-
 // Define characters and their roles
 const characters = {
     Farmer: {
@@ -42,8 +40,6 @@ const characters = {
     // Add more characters as needed
 };
 
-
-
 // Function to get AI response from the local Python server
 async function getAIResponse(prompt) {
     try {
@@ -68,8 +64,6 @@ async function getAIResponse(prompt) {
     }
 }
 
-
-
 // Function to get character history from the database
 function get_character_history(name) {
     return new Promise((resolve, reject) => {
@@ -85,8 +79,6 @@ function get_character_history(name) {
     });
 }
 
-
-
 // Function to add a message to character history in the database
 function add_to_character_history(name, message) {
     return new Promise((resolve, reject) => {
@@ -99,8 +91,6 @@ function add_to_character_history(name, message) {
         });
     });
 }
-
-
 
 // Endpoint to handle chat history requests
 app.post('/chat/history', (req, res) => {
@@ -117,8 +107,6 @@ app.post('/chat/history', (req, res) => {
             res.status(500).json({ response: 'Error retrieving chat history.' });
         });
 }); 
-
-
 
 // Endpoint to handle chat between characters
 app.post('/chat', async (req, res) => {
@@ -153,6 +141,74 @@ app.post('/chat', async (req, res) => {
 
 
 
+// Endpoint to handle character retrieval
+app.get('/characters', (req, res) => {
+    db.all(`SELECT * FROM characters`, [], (err, rows) => {
+        if (err) {
+            console.error('Error retrieving characters:', err.message);
+            return res.status(500).json({ response: 'Error retrieving characters.' });
+        }
+        res.json(rows);
+    });
+});
+
+
+
+// Endpoint to handle saving characters
+app.post('/characters', async (req, res) => {
+    const charactersToSave = req.body; // Expecting an array of character objects
+
+    // Clear existing characters
+    db.run(`DELETE FROM characters`, (err) => {
+        if (err) {
+            console.error('Error clearing characters:', err.message);
+            return res.status(500).json({ response: 'Error clearing characters.' });
+        }
+
+        // Insert new characters without position
+        const stmt = db.prepare(`INSERT INTO characters (name, role, type) VALUES (?, ?, ?)`);
+        charactersToSave.forEach(character => {
+            stmt.run(character.name, character.role, character.type);
+        });
+        stmt.finalize();
+
+        res.status(201).json({ response: 'Characters saved successfully.' });
+    });
+});
+
+
+
+// Endpoint to handle saving environmental elements
+app.post('/city', async (req, res) => {
+    const { element_name, row, col } = req.body; // Expecting element name and position
+
+    // Insert new element into the city table
+    const stmt = db.prepare(`INSERT INTO city (element_name, row, col) VALUES (?, ?, ?)`);
+    stmt.run(element_name, row, col, function(err) {
+        if (err) {
+            console.error('Error saving city element:', err.message);
+            return res.status(500).json({ response: 'Error saving city element.' });
+        }
+        res.status(201).json({ response: 'City element saved successfully.', id: this.lastID });
+    });
+    stmt.finalize();
+});
+
+
+
+// Endpoint to handle retrieving environmental elements
+app.get('/city', (req, res) => {
+    db.all(`SELECT * FROM city`, [], (err, rows) => {
+        if (err) {
+            console.error('Error retrieving city elements:', err.message);
+            return res.status(500).json({ response: 'Error retrieving city elements.' });
+        }
+        res.json(rows);
+    });
+});
+
+
+
 // Endpoint to handle login
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
@@ -176,8 +232,6 @@ app.post('/login', (req, res) => {
     );
 });
 
-
-
 // Endpoint to register a new user
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
@@ -196,8 +250,6 @@ app.post('/register', (req, res) => {
         }
     );
 });
-
-
 
 // Start server
 app.listen(PORT, () => {

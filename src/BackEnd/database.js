@@ -53,4 +53,39 @@ db.run(
     }
 );
 
+// Create a "characters" table
+db.run(
+    `CREATE TABLE IF NOT EXISTS characters (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        role TEXT NOT NULL,
+        type INTEGER NOT NULL
+    )`,
+    (err) => {
+        if (err) {
+            console.error('Error creating characters table:', err.message);
+        } else {
+            console.log('Characters table ready.');
+        }
+    }
+);
+
+// Create a "city" table
+db.run(
+    `CREATE TABLE IF NOT EXISTS city (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        element_name TEXT NOT NULL,
+        row INTEGER NOT NULL,
+        col INTEGER NOT NULL
+    )`,
+    (err) => {
+        if (err) {
+            console.error('Error creating city table:', err.message);
+        } else {
+            console.log('City table ready.');
+        }
+    }
+);
+
+
 export default db; // Use ES module export

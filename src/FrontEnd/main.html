@@ -219,6 +219,13 @@
             transform: scale(1.1); /* Slightly enlarge on hover */
         }
 
+        /* Prevent images from being selected */
+        img {
+            user-select: none; /* Prevent text selection */
+            -webkit-user-drag: none; /* Prevent dragging in WebKit browsers */
+            -moz-user-select: none; /* Prevent text selection in Firefox */
+        }
+
         /* Style for the 3x2 environmental element */
         .large-element {
             position: absolute; /* Position absolutely within the table container */
@@ -286,14 +293,15 @@
 
     <script>
         const characters = []; // Array to hold character objects
+        const environmentalElements = []; // Array to hold environmental elements
         const numOfHeroes = 10; // Number of heroes
         const table = document.querySelector('table');
         const tableContainer = document.getElementById('tableContainer');
         const moveturn = [
-              '1', '2', '3',
-              '2', '1', '2',
-              '3', '2', '1'
-            ];
+            '1', '2', '3',
+            '2', '1', '2',
+            '3', '2', '1'
+        ];
 
         // Name lists
         const maleNames = [
@@ -351,69 +359,121 @@
             };
         }
 
-        // Initialize characters with their positions
-        for (let i = 0; i < numOfHeroes; i++) {
-            const initialRow = Math.floor(Math.random() * 30); // Random initial row
-            const initialCol = Math.floor(Math.random() * 50); // Random initial column
-            const hero = createCharacter(Math.floor(Math.random() * 6) + 1, initialRow, initialCol);
-            characters.push(hero);
+        // Function to initialize characters
+        async function initializeCharacters() {
+            try {
+                const response = await fetch('http://localhost:3000/characters');
+                const data = await response.json();
 
-            // Create an image element for the character
-            hero.element = document.createElement('img');
-            hero.element.src = `hero${hero.type}/hero_down_1.png`; // Initial image (facing down)
-            hero.element.classList.add('character');
-
-            // Append the character to its initial position
-            table.rows[hero.position.row].cells[hero.position.col].appendChild(hero.element);
-
-            // Add event listener to each character
-            hero.element.addEventListener('click', async (event) => {
-                event.stopPropagation(); // Prevent the click from bubbling up to the body
-                const characterName = hero.name; // Get the character's name
-
-                // Request the chat history from the server
-                try {
-                    const response = await fetch(`http://localhost:3000/chat/history`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ name: characterName }), // Send the character name to the server
+                if (data.length > 0) {
+                    // Characters were fetched from the server
+                    data.forEach(characterData => {
+                        const initialRow = Math.floor(Math.random() * 30); // Random initial row
+                        const initialCol = Math.floor(Math.random() * 50); // Random initial column
+                        const hero = {
+                            ...characterData,
+                            position: { row: initialRow, col: initialCol },
+                            element: null // This will hold the character's HTML element
+                        };
+                        characters.push(hero);
                     });
-
-                    if (!response.ok) throw new Error('Failed to fetch chat history');
-
-                    const data = await response.json(); // Get the chat history from the response
-                    const chatHistory = data.history; // Extract the history
-                    // Show chat container and display the character's name and role
-                    chatContainer.style.display = 'block'; // Show chat container
-                    const chatHeader = document.getElementById('chatHeader');
-                    chatHeader.innerHTML = `<strong>${hero.name}</strong>, ${hero.role}`; // Display name and role
-                    
-                    // Display the character's chat history
-                    chatOutput.innerHTML = ''; // Clear previous chat output
-                    const messages = chatHistory.split('\n'); // Assuming each message is separated by a newline
-                    messages.forEach(msg => {
-                        if (msg.trim()) { // Check if the message is not just whitespace
-                            const [sender, text] = msg.split(': '); // Split by ": " to separate sender and message
-                            const messageClass = sender === 'You' ? 'user-message' : 'character-message'; // Determine message class
-                            chatOutput.innerHTML += `<div class="message ${messageClass}"><strong>${sender}:</strong> ${text}</div>`;
-                            chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
-                        }
-                    });
-
-                    // Scroll to the bottom of the chat output
-                    chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
-
-                    // Set the active character in the chat container
-                    chatContainer.setAttribute('data-active-character', characters.indexOf(hero)); // Set the active character index
-
-                } catch (error) {
-                    console.error('Error fetching chat history:', error);
-                    chatOutput.innerHTML = `<p><strong>Error:</strong> Unable to load chat history.</p>`;
+                } else {
+                    // No characters found, generate them randomly
+                    for (let i = 0; i < numOfHeroes; i++) {
+                        const initialRow = Math.floor(Math.random() * 30); // Random initial row
+                        const initialCol = Math.floor(Math.random() * 50); // Random initial column
+                        const hero = createCharacter(Math.floor(Math.random() * 6) + 1, initialRow, initialCol);
+                        characters.push(hero);
+                    }
+                    // Save the generated characters to the server
+                    await saveCharactersToServer(characters);
                 }
+
+                // Now render the characters on the map
+                renderCharacters();
+            } catch (error) {
+                console.error('Error fetching characters:', error);
+            }
+        }
+
+        // Function to save characters to the server
+        async function saveCharactersToServer(charactersToSave) {
+            try {
+                await fetch('http://localhost:3000/characters', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(charactersToSave),
+                });
+            } catch (error) {
+                console.error('Error saving characters:', error);
+            }
+        }
+
+        // Function to render characters on the map
+        function renderCharacters() {
+            characters.forEach(hero => {
+                // Create an image element for the character
+                hero.element = document.createElement('img');
+                hero.element.src = `hero${hero.type}/hero_down_1.png`; // Initial image (facing down)
+                hero.element.classList.add('character');
+
+                // Append the character to its initial position
+                table.rows[hero.position.row].cells[hero.position.col].appendChild(hero.element);
+
+                // Add event listener to each character
+                hero.element.addEventListener('click', async (event) => {
+                    event.stopPropagation(); // Prevent the click from bubbling up to the body
+                    const characterName = hero.name; // Get the character's name
+
+                    // Request the chat history from the server
+                    try {
+                        const response = await fetch(`http://localhost:3000/chat/history`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ name: characterName }), // Send the character name to the server
+                        });
+
+                        if (!response.ok) throw new Error('Failed to fetch chat history');
+
+                        const data = await response.json(); // Get the chat history from the response
+                        const chatHistory = data.history; // Extract the history
+                        // Show chat container and display the character's name and role
+                        chatContainer.style.display = 'block'; // Show chat container
+                        const chatHeader = document.getElementById('chatHeader');
+                        chatHeader.innerHTML = `<strong>${hero.name}</strong>, ${hero.role}`; // Display name and role
+                        
+                        // Display the character's chat history
+                        chatOutput.innerHTML = ''; // Clear previous chat output
+                        const messages = chatHistory.split('\n'); // Assuming each message is separated by a newline
+                        messages.forEach(msg => {
+                            if (msg.trim()) { // Check if the message is not just whitespace
+                                const [sender, text] = msg.split(': '); // Split by ": " to separate sender and message
+                                const messageClass = sender === 'You' ? 'user-message' : 'character-message'; // Determine message class
+                                chatOutput.innerHTML += `<div class="message ${messageClass}"><strong>${sender}:</strong> ${text}</div>`;
+                                chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
+                            }
+                        });
+
+                        // Scroll to the bottom of the chat output
+                        chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
+
+                        // Set the active character in the chat container
+                        chatContainer.setAttribute('data-active-character', characters.indexOf(hero)); // Set the active character index
+
+                    } catch (error) {
+                        console.error('Error fetching chat history:', error);
+                        chatOutput.innerHTML = `<p><strong>Error:</strong> Unable to load chat history.</p>`;
+                    }
+                });
             });
         }
+
+        // Call the function to initialize characters on page load
+        initializeCharacters();
 
         // Chat functionality
         const chatOutput = document.getElementById('chatOutput');
@@ -488,17 +548,64 @@
                 { row: 0, col: 1, direction: 'right' }, // right
             ];
 
-            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-            const newRow = character.position.row + randomDirection.row;
-            const newCol = character.position.col + randomDirection.col;
+            let newPosition;
+            let isValidMove = false;
 
-            // Ensure new position is within bounds
-            if (newRow >= 0 && newRow < 30 && newCol >= 0 && newCol < 50) {
-                return { row: newRow, col: newCol, direction: randomDirection.direction };
-            } else {
-                // If the new position is out of bounds, try again
-                return getRandomAdjacentPosition(character);
+            // Keep trying until a valid move is found
+            while (!isValidMove) {
+                const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                const newRow = character.position.row + randomDirection.row;
+                const newCol = character.position.col + randomDirection.col;
+
+                // Check if new position is within bounds
+                if (newRow >= 0 && newRow < 30 && newCol >= 0 && newCol < 50) {
+                    // Check for obstacles
+                    if (!isObstacle(newRow, newCol)) {
+                        newPosition = { row: newRow, col: newCol, direction: randomDirection.direction };
+                        isValidMove = true; // Valid move found
+                    }
+                }
             }
+            return newPosition;
+        }
+
+        // Function to check if the position is occupied by an environmental element
+        function isObstacle(row, col) {
+            // Check for each environmental element and its occupied cells
+            for (const element of environmentalElements) {
+                const { element_name, position } = element;
+                const occupiedCells = getOccupiedCells(element_name, position);
+
+                for (const cell of occupiedCells) {
+                    if (cell.row === row && cell.col === col) {
+                        return true; // Obstacle found
+                    }
+                }
+            }
+            return false; // No obstacles
+        }
+
+        // Function to get occupied cells based on the element type
+        function getOccupiedCells(element_name, position) {
+            const cells = [];
+            const { row, col } = position;
+
+            if (element_name === 'rock') {
+                // Rock occupies a 3x2 area
+                for (let r = row; r < row + 2; r++) {
+                    for (let c = col; c < col + 3; c++) {
+                        cells.push({ row: r, col: c });
+                    }
+                }
+            } else {
+                // Other elements occupy a 2x2 area
+                for (let r = row; r < row + 2; r++) {
+                    for (let c = col; c < col + 2; c++) {
+                        cells.push({ row: r, col: c });
+                    }
+                }
+            }
+            return cells;
         }
 
         // Function to move all characters
@@ -564,7 +671,7 @@
         
         moveCharacters(); 
         // Start the movement every 2 seconds
-        setInterval(moveCharacters, 2000); // Move characters every 2 seconds
+        setInterval(moveCharacters, 1780); // Move characters every 2 seconds
 
         // Environmental element placement
         let selectedElement = null;
@@ -587,7 +694,7 @@
         });
 
         // Place environmental element on map click
-        tableContainer.addEventListener('click', (event) => {
+        tableContainer.addEventListener('click', async (event) => {
             if (selectedElement) {
                 const rect = table.getBoundingClientRect();
                 const x = event.clientX - rect.left; // X position relative to the table
@@ -596,10 +703,11 @@
                 const col = Math.floor(x / 30); // Assuming each cell is 30px wide
 
                 // Check if the selected position and the next row and column are valid
+                let elementImg;
                 if (selectedElement === 'rock') {
                     // Ensure it fits within bounds for 3 wide and 2 tall
-                    if (row >= 0 && row < 29 && col >= 0 && col < 48) {
-                        const elementImg = document.createElement('img');
+                    if (row >= 0 && row < 29 && col >= 0 && col < 48 && !isObstacle(row, col)) {
+                        elementImg = document.createElement('img');
                         elementImg.src = 'map_add_3.png'; // Use the rock image
                         elementImg.classList.add('large-element'); // Add class for styling
                         elementImg.style.left = `${col * 30}px`; // Position based on cell size
@@ -607,11 +715,14 @@
 
                         // Append the image to the table container
                         tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'rock', position: { row, col } }); // Track the element
+                        // Save to server
+                        await saveElementToServer(selectedElement, row, col);
                     }
                 } else {
                     // For tree and lake, maintain the 2x2 size
-                    if (row >= 0 && row < 29 && col >= 0 && col < 49) {
-                        const elementImg = document.createElement('img');
+                    if (row >= 0 && row < 29 && col >= 0 && col < 49 && !isObstacle(row, col)) {
+                        elementImg = document.createElement('img');
                         elementImg.src = selectedElement === 'tree' ? 'map_add_1.png' : 'map_add_2.png'; // Use the correct image
                         elementImg.classList.add('small-element'); // Add class for 2x2 styling
                         elementImg.style.left = `${col * 30}px`; // Position based on cell size
@@ -619,6 +730,9 @@
 
                         // Append the image to the table container
                         tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: selectedElement, position: { row, col } }); // Track the element
+                        // Save to server
+                        await saveElementToServer(selectedElement, row, col);
                     }
                 }
 
@@ -627,6 +741,57 @@
                 tableContainer.style.cursor = 'grab'; // Reset cursor back to grab
             }
         });
+
+        // Function to save environmental element to the server
+        async function saveElementToServer(elementName, row, col) {
+            try {
+                await fetch('http://localhost:3000/city', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ element_name: elementName, row: row, col: col }),
+                });
+            } catch (error) {
+                console.error('Error saving environmental element:', error);
+            }
+        }
+
+        // Function to load environmental elements from the server
+        async function loadEnvironmentalElements() {
+            try {
+                const response = await fetch('http://localhost:3000/city');
+                const elements = await response.json();
+
+                elements.forEach(element => {
+                    const { element_name, row, col } = element;
+                    let elementImg;
+
+                    if (element_name === 'rock') {
+                        elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_3.png';
+                        elementImg.classList.add('large-element');
+                        elementImg.style.left = `${col * 30}px`;
+                        elementImg.style.top = `${row * 30}px`;
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'rock', position: { row, col } }); // Track the element
+                    } else {
+                        elementImg = document.createElement('img');
+                        elementImg.src = element_name === 'tree' ? 'map_add_1.png' : 'map_add_2.png';
+                        elementImg.classList.add('small-element');
+                        elementImg.style.left = `${col * 30}px`;
+                        elementImg.style.top = `${row * 30}px`;
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: element_name, position: { row, col } }); // Track the element
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading environmental elements:', error);
+            }
+        }
+
+        // Load environmental elements on page load
+        loadEnvironmentalElements();
 
         // Reset cursor when not placing elements
         tableContainer.addEventListener('mouseleave', () => {
@@ -642,6 +807,8 @@
             startX = e.pageX - tableContainer.offsetLeft;
             startY = e.pageY - tableContainer.offsetTop;
             tableContainer.style.cursor = 'grabbing'; // Change cursor to grabbing while dragging
+            // Prevent image selection
+            document.body.style.userSelect = 'none';
         });
 
         tableContainer.addEventListener('mousemove', (e) => {
@@ -660,6 +827,8 @@
         tableContainer.addEventListener('mouseup', () => {
             isDragging = false;
             tableContainer.style.cursor = 'grab'; // Reset cursor back to grab
+            // Allow image selection again
+            document.body.style.userSelect = '';
         });
     </script>
 
