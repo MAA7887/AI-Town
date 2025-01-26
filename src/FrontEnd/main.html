@@ -73,13 +73,16 @@
             display: none; /* Initially hidden */
             position: fixed;
             bottom: 20px;
-            right: 20px;
+            right: 12px; /* Adjusted to move the chatbox approximately 1cm to the left */
             width: 300px;
-            background-color: white;
+            height: 500px; /* Increased height for a longer chatbox */
+            background-color: #fff8e1; /* Light sand color */
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             padding: 10px;
             z-index: 1000;
+            display: flex;
+            flex-direction: column; /* Flex direction for vertical layout */
         }
 
         .close-chat-btn {
@@ -93,10 +96,39 @@
             right: 10px;
         }
 
+        #chatHeader {
+            font-weight: bold; /* Make the header bold */
+            margin-bottom: 10px; /* Add some space below the header */
+        }
+
         #chatOutput {
-            max-height: 200px;
-            overflow-y: auto;
+            flex: 1; /* Allow this to take up available space */
+            max-height: 400px; /* Adjusted for more space */
+            overflow-y: auto; /* Enable scrolling */
             margin-bottom: 10px;
+            padding: 5px; /* Padding for better spacing */
+        }
+
+        .message {
+            margin: 5px 0; /* Space between messages */
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background-color: #d1e7dd; /* Light greenish background for user messages */
+            border-left: 5px solid #0f5132; /* Darker green border */
+        }
+
+        .character-message {
+            background-color: #ffeeba; /* Light yellow background for character messages */
+            border-left: 5px solid #856404; /* Darker yellow border */
+        }
+
+        .separator {
+            height: 1px;
+            background-color: #e2b005; /* Sand color for the separator */
+            margin: 5px 0; /* Space around the separator */
         }
 
         #chatInput {
@@ -104,6 +136,7 @@
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            margin-right: 5px; /* Space between input and button */
         }
 
         #sendChatButton {
@@ -113,6 +146,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            height: 100%; /* Match the height of the input */
         }
 
         #sendChatButton:hover {
@@ -139,7 +173,7 @@
         td {
             width: 30px; /* Set the width of each cell */
             height: 30px; /* Set the height of each cell */
-            background-image: url('floor.jpg'); /* Use your image for the floor */
+            background-image: url('floor1.jpg'); /* Use your image for the floor */
             background-size: cover;
             background-position: center;
             position: relative; /* Ensure the character is positioned correctly inside the cell */
@@ -168,22 +202,15 @@
         <h1>AI TOWN</h1>
     </div>
     
-    <!-- Dropdown to select Hero Folder -->
-    <!-- <select id="heroFolderSelect">
-        <option value="hero1">Hero 1</option>
-        <option value="hero2">Hero 2</option>
-        <option value="hero3">Hero 3</option>
-        <option value="hero4">Hero 4</option>
-        <option value="hero5">Hero 5</option>
-        <option value="hero6">Hero 6</option>
-    </select> -->
-    
     <!-- Chat Container -->
-    <div class="chat-container" id="chatContainer">
+    <div class="chat-container" id="chatContainer" style="display: none;"> <!-- Ensure it's hidden initially -->
         <button class="close-chat-btn" id="closeChatButton">&times;</button>
+        <div id="chatHeader"></div> <!-- Added header for name and role -->
         <div id="chatOutput"></div>
-        <input type="text" id="chatInput" placeholder="Type your message..." />
-        <button id="sendChatButton">Send</button>
+        <div style="display: flex; margin-top: auto;"> <!-- Flexbox to keep input at the bottom -->
+            <input type="text" id="chatInput" placeholder="Type your message..." />
+            <button id="sendChatButton">Send</button>
+        </div>
     </div>
 
     <!-- Table Container -->
@@ -191,8 +218,6 @@
         <table>
             <tbody>
                 <script>
-                    let characterPosition = { row: 0, col: 0 }; // Initial position (row, col)
-
                     // Create the 30x50 table
                     for (let i = 0; i < 30; i++) {
                         document.write('<tr>');
@@ -207,157 +232,141 @@
     </div>
 
     <script>
-        // Function to get the selected folder
-        function getSelectedHeroFolder() {
-            return document.getElementById('heroFolderSelect').value;
-        }
-
-        let heroFolder = 'hero1'; // Get folder selected by user
+        const characters = []; // Array to hold character objects
+        const numOfHeroes = 10; // Number of heroes
         const table = document.querySelector('table');
         const tableContainer = document.getElementById('tableContainer');
-        
-        // Create an image element for the character
-        const characterElement = document.createElement('img');
-        characterElement.src = `${heroFolder}/hero_down_1.png`; // Initial image (facing down)
-        characterElement.classList.add('character');
-        
-        // Append the character to the initial position
-        table.rows[characterPosition.row].cells[characterPosition.col].appendChild(characterElement);
-
-        // Array of images in the desired order
-        const right_imageSequence = [
-            'hero_right_1.png', 'hero_right_2.png', 'hero_right_3.png', 
-            'hero_right_2.png', 'hero_right_1.png', 'hero_right_2.png', 
-            'hero_right_3.png', 'hero_right_2.png', 'hero_right_1.png'
-        ];
-        const left_imageSequence = [
-            'hero_left_1.png', 'hero_left_2.png', 'hero_left_3.png', 
-            'hero_left_2.png', 'hero_left_1.png', 'hero_left_2.png', 
-            'hero_left_3.png', 'hero_left_2.png', 'hero_left_1.png'
-        ];
-        const up_imageSequence = [
-            'hero_up_1.png', 'hero_up_2.png', 'hero_up_3.png', 
-            'hero_up_2.png', 'hero_up_1.png', 'hero_up_2.png', 
-            'hero_up_3.png', 'hero_up_2.png', 'hero_up_1.png'
-        ];
-        const down_imageSequence = [
-            'hero_down_1.png', 'hero_down_2.png', 'hero_down_3.png', 
-            'hero_down_2.png', 'hero_down_1.png', 'hero_down_2.png', 
-            'hero_down_3.png', 'hero_down_2.png', 'hero_down_1.png'
-        ];
-
-        let moveCount = 0; // Track the number of moves
-        let moving = false; // Track if the character is currently moving
-        let newPosition = getRandomAdjacentPosition(); // Get the initial random position
-
-        // Function to get a random adjacent position (up, down, left, right)
-        function getRandomAdjacentPosition() {
-            const directions = [
-                { row: -1, col: 0, direction: 'up' }, // up
-                { row: 1, col: 0, direction: 'down' }, // down
-                { row: 0, col: -1, direction: 'left' }, // left
-                { row: 0, col: 1, direction: 'right' }, // right
+        const moveturn = [
+              '1', '2', '3',
+              '2', '1', '2',
+              '3', '2', '1'
             ];
 
-            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-            const newRow = characterPosition.row + randomDirection.row;
-            const newCol = characterPosition.col + randomDirection.col;
+        // Name lists
+        const maleNames = [
+            "Michael", "Robert", "John", "David", "William",
+            "Richard", "Joseph", "Thomas", "Christopher", "Charles",
+            "Daniel", "Matthew", "Anthony", "Mark", "Donald",
+            "Steven", "Andrew", "Paul", "Joshua"
+        ];
+        
+        const femaleNames = [
+            "Patricia", "Jennifer", "Linda", "Elizabeth", "Barbara",
+            "Susan", "Jessica", "Karen", "Sarah", "Lisa",
+            "Nancy", "Sandra", "Betty", "Ashley", "Emily",
+            "Kimberly", "Margaret", "Donna", "Michelle"
+        ];
 
-            // Ensure new position is within bounds
-            if (newRow >= 0 && newRow < 30 && newCol >= 0 && newCol < 50) {
-                return { row: newRow, col: newCol, direction: randomDirection.direction };
-            } else {
-                // If the new position is out of bounds, try again
-                return getRandomAdjacentPosition();
+        // Function to get a random name from a list and remove it from the list
+        function getRandomName(nameList) {
+            const randomIndex = Math.floor(Math.random() * nameList.length);
+            return nameList.splice(randomIndex, 1)[0]; // Remove and return the name
+        }
+
+        // Function to create a character object
+        function createCharacter(heroType, initialRow, initialCol) {
+            let name, role;
+
+            // Assign name and role based on hero type
+            if (heroType === 1) {
+                name = getRandomName(femaleNames);
+                role = "Student";
+            } else if (heroType === 2) {
+                name = getRandomName(femaleNames);
+                role = "Teacher";
+            } else if (heroType === 3) {
+                name = getRandomName(femaleNames);
+                role = "Artist";
+            } else if (heroType === 4) {
+                name = getRandomName(femaleNames);
+                role = "Shopkeeper";
+            } else if (heroType === 5) {
+                name = getRandomName(maleNames);
+                role = "Barber";
+            } else if (heroType === 6) {
+                name = getRandomName(maleNames);
+                role = "Farmer";
             }
+
+            return {
+                type: heroType,
+                position: { row: initialRow, col: initialCol },
+                element: null, // This will hold the character's HTML element
+                direction: 'down', // Default direction
+                name: name, // Store the character's name
+                role: role // Store the character's role
+            };
         }
 
-        // Function to move the character to a new adjacent position incrementally
-        function moveCharacter() {    
-            if (moving) return; // Prevent overlapping movements
-            moving = true; // Set moving state to true
-            moveCount = 0; // Reset move count for the new movement
+        // Initialize characters with their positions
+        for (let i = 0; i < numOfHeroes; i++) {
+            const initialRow = Math.floor(Math.random() * 30); // Random initial row
+            const initialCol = Math.floor(Math.random() * 50); // Random initial column
+            const hero = createCharacter(Math.floor(Math.random() * 6) + 1, initialRow, initialCol);
+            characters.push(hero);
 
-            let interval = setInterval(() => {
-                if (moveCount < 6) {
-                    moveCount++;
-                    var movementDistance = 5 * moveCount; // Move by 25% of the cell width (25px) each time
+            // Create an image element for the character
+            hero.element = document.createElement('img');
+            hero.element.src = `hero${hero.type}/hero_down_1.png`; // Initial image (facing down)
+            hero.element.classList.add('character');
 
-                    // Change the image based on the move count
-                    switch (newPosition.direction) {
-                        case 'up':
-                            characterElement.src = `${heroFolder}/${up_imageSequence[moveCount]}`;
-                            characterElement.style.transform = `translateY(${-movementDistance}px)`;
-                            break;
-                        case 'down':
-                            characterElement.src = `${heroFolder}/${down_imageSequence[moveCount]}`;
-                            characterElement.style.transform = `translateY(${movementDistance}px)`;
-                            break;
-                        case 'left':
-                            characterElement.src = `${heroFolder}/${left_imageSequence[moveCount]}`;
-                            characterElement.style.transform = `translateX(${-movementDistance}px)`;
-                            break;
-                        case 'right':
-                            characterElement.src = `${heroFolder}/${right_imageSequence[moveCount]}`;
-                            characterElement.style.transform = `translateX(${movementDistance}px)`;
-                            break;
-                    }
-                } else {
-                    // After completing the move, change the position and reset transform
-                    clearInterval(interval); // Stop the interval
-                    table.rows[characterPosition.row].cells[characterPosition.col].removeChild(characterElement);
+            // Append the character to its initial position
+            table.rows[hero.position.row].cells[hero.position.col].appendChild(hero.element);
 
-                    // Update the position
-                    characterPosition = { row: newPosition.row, col: newPosition.col };
+            // Add event listener to each character
+            hero.element.addEventListener('click', async (event) => {
+                event.stopPropagation(); // Prevent the click from bubbling up to the body
+                const characterName = hero.name; // Get the character's name
 
-                    // Reset the character's image to the final image for the direction
-                    switch (newPosition.direction) {
-                        case 'up':
-                            characterElement.src = `${heroFolder}/${up_imageSequence[8]}`;
-                            break;
-                        case 'down':
-                            characterElement.src = `${heroFolder}/${down_imageSequence[8]}`;
-                            break;
-                        case 'left':
-                            characterElement.src = `${heroFolder}/${left_imageSequence[8]}`;
-                            break;
-                        case 'right':
-                            characterElement.src = `${heroFolder}/${right_imageSequence[8]}`;
-                            break;
-                    }
+                // Request the chat history from the server
+                try {
+                    const response = await fetch(`http://localhost:3000/chat/history`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name: characterName }), // Send the character name to the server
+                    });
 
-                    // Reset the transform to initial position
-                    characterElement.style.transform = `translateX(0) translateY(0)`;
+                    if (!response.ok) throw new Error('Failed to fetch chat history');
 
-                    // Append the character to the new cell
-                    table.rows[characterPosition.row].cells[characterPosition.col].appendChild(characterElement);
+                    const data = await response.json(); // Get the chat history from the response
+                    const chatHistory = data.history; // Extract the history
+                    // Show chat container and display the character's name and role
+                    chatContainer.style.display = 'block'; // Show chat container
+                    const chatHeader = document.getElementById('chatHeader');
+                    chatHeader.innerHTML = `<strong>${hero.name}</strong>, ${hero.role}`; // Display name and role
+                    
+                    // Display the character's chat history
+                    chatOutput.innerHTML = ''; // Clear previous chat output
+                    const messages = chatHistory.split('\n'); // Assuming each message is separated by a newline
+                    messages.forEach(msg => {
+                        if (msg.trim()) { // Check if the message is not just whitespace
+                            const [sender, text] = msg.split(': '); // Split by ": " to separate sender and message
+                            const messageClass = sender === 'You' ? 'user-message' : 'character-message'; // Determine message class
+                            chatOutput.innerHTML += `<div class="message ${messageClass}"><strong>${sender}:</strong> ${text}</div>`;
+                            chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
+                        }
+                    });
 
-                    moving = false; // Reset moving state
-                    newPosition = getRandomAdjacentPosition(); // Get a new position for the next move
-                    setTimeout(moveCharacter, 500); // Start the next move after a delay
+                    // Scroll to the bottom of the chat output
+                    chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
+
+                    // Set the active character in the chat container
+                    chatContainer.setAttribute('data-active-character', characters.indexOf(hero)); // Set the active character index
+
+                } catch (error) {
+                    console.error('Error fetching chat history:', error);
+                    chatOutput.innerHTML = `<p><strong>Error:</strong> Unable to load chat history.</p>`;
                 }
-            }, 250); // Adjust the interval time for smooth movement
+            });
         }
-
-        // Start the movement after 500ms
-        setTimeout(moveCharacter, 500); // Wait a bit before starting the movement
 
         // Chat functionality
-        const chatContainer = document.getElementById('chatContainer');
         const chatOutput = document.getElementById('chatOutput');
         const chatInput = document.getElementById('chatInput');
         const sendChatButton = document.getElementById('sendChatButton');
         const closeChatButton = document.getElementById('closeChatButton');
-
-        // Function to open the chat box
-        function openChat(characterRole) {
-            chatContainer.style.display = 'block'; // Show chat container
-            chatOutput.innerHTML = ''; // Clear previous messages
-            chatInput.setAttribute('data-character-role', characterRole); // Store the character role in the input
-        }
-
-        // Add click event listener to the character to open chat
-        characterElement.addEventListener('click', () => openChat('farmer')); // Assuming the character is a farmer
 
         // Close chat functionality
         closeChatButton.addEventListener('click', () => {
@@ -366,28 +375,45 @@
 
         // Function to send message
         async function sendMessage() {
+            const activeCharacterIndex = chatContainer.getAttribute('data-active-character');
+            const character = characters[activeCharacterIndex];
             const message = chatInput.value;
-            const characterRole = chatInput.getAttribute('data-character-role'); // Get character role
 
             if (!message) return; // Don't send empty messages
 
-            chatInput.value = ''; // Clear input field
+            // Clear input field
+            chatInput.value = ''; 
 
-            // Display user message
-            chatOutput.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+            // Display user message with separator
+            chatOutput.innerHTML += `<div class="message user-message"><strong>You:</strong> ${message}</div>`;
+            chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
 
-            // Send message to the server and get AI response
-            const response = await fetch('http://localhost:3000/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message, characterRole }),
-            });
-            const data = await response.json();
+            // Send message to the server and get character response
+            try {
+                const response = await fetch('http://localhost:3000/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        name: character.name,
+                        characterRole: character.role
+                    }),
+                });
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
 
-            // Display AI response
-            chatOutput.innerHTML += `<p><strong>AI:</strong> ${data.response}</p>`;
+                // Display character's response using their name with separator
+                chatOutput.innerHTML += `<div class="message character-message"><strong>${character.name}:</strong> ${data.response}</div>`;
+                chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
+
+                // Scroll to the bottom of the chat output
+                chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
+            } catch (error) {
+                console.error('Error:', error);
+                chatOutput.innerHTML += `<p><strong>Error:</strong> Unable to send message.</p>`;
+            }
         }
 
         // Send message on button click
@@ -399,6 +425,93 @@
                 sendMessage();
             }
         });
+
+        // Function to get a random adjacent position (up, down, left, right)
+        function getRandomAdjacentPosition(character) {
+            const directions = [
+                { row: -1, col: 0, direction: 'up' }, // up
+                { row: 1, col: 0, direction: 'down' }, // down
+                { row: 0, col: -1, direction: 'left' }, // left
+                { row: 0, col: 1, direction: 'right' }, // right
+            ];
+
+            const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+            const newRow = character.position.row + randomDirection.row;
+            const newCol = character.position.col + randomDirection.col;
+
+            // Ensure new position is within bounds
+            if (newRow >= 0 && newRow < 30 && newCol >= 0 && newCol < 50) {
+                return { row: newRow, col: newCol, direction: randomDirection.direction };
+            } else {
+                // If the new position is out of bounds, try again
+                return getRandomAdjacentPosition(character);
+            }
+        }
+
+        // Function to move all characters
+        function moveCharacters() {
+            characters.forEach(character => {
+                const newPosition = getRandomAdjacentPosition(character);
+                const currentCell = table.rows[character.position.row].cells[character.position.col];
+                const newCell = table.rows[newPosition.row].cells[newPosition.col];
+
+                // Move the character
+                let moveCount = 0; // Track the number of moves
+                let moving = false; // Track if the character is currently moving
+
+                if (moving) return; // Prevent overlapping movements
+                moving = true; // Set moving state to true
+
+                let interval = setInterval(() => {
+                    if (moveCount < 6) {
+                        moveCount++;
+                        const movementDistance = 5 * moveCount; // Move by 25% of the cell width (25px) each time
+
+                        // Change the image based on the move count
+                        switch (newPosition.direction) {
+                            case 'up':
+                                character.element.src = `hero${character.type}/hero_up_${moveturn[moveCount]}.png`;
+                                character.element.style.transform = `translateY(${-movementDistance}px)`;
+                                break;
+                            case 'down':
+                                character.element.src = `hero${character.type}/hero_down_${moveturn[moveCount]}.png`;
+                                character.element.style.transform = `translateY(${movementDistance}px)`;
+                                break;
+                            case 'left':
+                                character.element.src = `hero${character.type}/hero_left_${moveturn[moveCount]}.png`;
+                                character.element.style.transform = `translateX(${-movementDistance}px)`;
+                                break;
+                            case 'right':
+                                character.element.src = `hero${character.type}/hero_right_${moveturn[moveCount]}.png`;
+                                character.element.style.transform = `translateX(${movementDistance}px)`;
+                                break;
+                        }
+                    } else {
+                        // After completing the move, change the position and reset transform
+                        clearInterval(interval); // Stop the interval
+                        currentCell.removeChild(character.element); // Remove from current cell
+
+                        // Update the position
+                        character.position = { row: newPosition.row, col: newPosition.col };
+
+                        // Reset the character's image to the final image for the direction
+                        character.element.src = `hero${character.type}/hero_${newPosition.direction}_2.png`;
+
+                        // Reset the transform to initial position
+                        character.element.style.transform = `translateX(0) translateY(0)`;
+
+                        // Append the character to the new cell
+                        newCell.appendChild(character.element);
+
+                        moving = false; // Reset moving state
+                    }
+                }, 250); // Adjust the interval time for smooth movement
+            });
+        }
+        
+        moveCharacters(); 
+        // Start the movement every 2 seconds
+        setInterval(moveCharacters, 2000); // Move characters every 2 seconds
 
         // Scroll drag functionality
         let isDragging = false;
