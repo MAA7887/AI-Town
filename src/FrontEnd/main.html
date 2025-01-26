@@ -258,7 +258,7 @@
         <div class="sidebar">
             <img src="map_add_1.png" id="treeIcon" alt="Tree" title="Tree" />
             <img src="map_add_2.png" id="lakeIcon" alt="Lake" title="Lake" />
-            <img src="map_add_3.png" id="rockIcon" alt="Rock" title="Rock" /> <!-- New icon added -->
+            <img src="map_add_3.png" id="houseIcon" alt="house" title="house" /> <!-- New icon added -->
         </div>
     </div>
 
@@ -395,6 +395,7 @@
                 console.error('Error fetching characters:', error);
             }
         }
+
 
         // Function to save characters to the server
         async function saveCharactersToServer(charactersToSave) {
@@ -590,8 +591,8 @@
             const cells = [];
             const { row, col } = position;
 
-            if (element_name === 'rock') {
-                // Rock occupies a 3x2 area
+            if (element_name === 'house') {
+                // house occupies a 3x2 area
                 for (let r = row; r < row + 2; r++) {
                     for (let c = col; c < col + 3; c++) {
                         cells.push({ row: r, col: c });
@@ -671,7 +672,7 @@
         
         moveCharacters(); 
         // Start the movement every 2 seconds
-        setInterval(moveCharacters, 1780); // Move characters every 2 seconds
+        setInterval(moveCharacters, 1780); // Move characters every 1780 milliseconds
 
         // Environmental element placement
         let selectedElement = null;
@@ -687,10 +688,10 @@
             tableContainer.style.cursor = 'url(map_add_2.png), auto'; // Change cursor to lake icon
         });
 
-        // Select rock environmental element
-        document.getElementById('rockIcon').addEventListener('click', () => {
-            selectedElement = 'rock';
-            tableContainer.style.cursor = 'url(map_add_3.png), auto'; // Change cursor to rock icon
+        // Select house environmental element
+        document.getElementById('houseIcon').addEventListener('click', () => {
+            selectedElement = 'house';
+            tableContainer.style.cursor = 'url(map_add_3.png), auto'; // Change cursor to house icon
         });
 
         // Place environmental element on map click
@@ -704,18 +705,18 @@
 
                 // Check if the selected position and the next row and column are valid
                 let elementImg;
-                if (selectedElement === 'rock') {
+                if (selectedElement === 'house') {
                     // Ensure it fits within bounds for 3 wide and 2 tall
                     if (row >= 0 && row < 29 && col >= 0 && col < 48 && !isObstacle(row, col)) {
                         elementImg = document.createElement('img');
-                        elementImg.src = 'map_add_3.png'; // Use the rock image
+                        elementImg.src = 'map_add_3.png'; // Use the house image
                         elementImg.classList.add('large-element'); // Add class for styling
                         elementImg.style.left = `${col * 30}px`; // Position based on cell size
                         elementImg.style.top = `${row * 30}px`; // Position based on cell size
 
                         // Append the image to the table container
                         tableContainer.appendChild(elementImg);
-                        environmentalElements.push({ element_name: 'rock', position: { row, col } }); // Track the element
+                        environmentalElements.push({ element_name: 'house', position: { row, col } }); // Track the element
                         // Save to server
                         await saveElementToServer(selectedElement, row, col);
                     }
@@ -767,14 +768,14 @@
                     const { element_name, row, col } = element;
                     let elementImg;
 
-                    if (element_name === 'rock') {
+                    if (element_name === 'house') {
                         elementImg = document.createElement('img');
                         elementImg.src = 'map_add_3.png';
                         elementImg.classList.add('large-element');
                         elementImg.style.left = `${col * 30}px`;
                         elementImg.style.top = `${row * 30}px`;
                         tableContainer.appendChild(elementImg);
-                        environmentalElements.push({ element_name: 'rock', position: { row, col } }); // Track the element
+                        environmentalElements.push({ element_name: 'house', position: { row, col } }); // Track the element
                     } else {
                         elementImg = document.createElement('img');
                         elementImg.src = element_name === 'tree' ? 'map_add_1.png' : 'map_add_2.png';
