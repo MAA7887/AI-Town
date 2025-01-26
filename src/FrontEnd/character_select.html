@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Selection - AI TOWN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <style>
+         body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-image: url('background1.jpg'); /* Set the background image */
+            background-size: cover; /* Cover the entire viewport */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Prevent the background image from repeating */
+        }
+        .character-selection {
+            text-align: center;
+            margin-bottom: 0px;
+        }
+
+        /* Style for the heading */
+        h1 {
+            color: #333; /* Change text color */
+            font-size: 4rem; /* Make the text larger */
+            margin-bottom: 155px; /* Add some space below the heading */
+        }
+
+        .character-images {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .character-container {
+            margin: 10px; /* Margin for spacing */
+            text-align: center; /* Center text under images */
+        }
+
+        .character-images img {
+            width: 100px; /* Adjust as needed */
+            height: auto;
+            cursor: pointer;
+            border: 2px solid transparent; /* Default border */
+            border-radius: 5px;
+            transition: border-color 0.3s;
+        }
+
+        .character-images img:hover {
+            border-color: #2C4F6B; /* Highlight on hover */
+        }
+
+        .selected {
+            border-color: #2C4F6B; /* Selected character border color */
+            background-color: #333;
+            box-shadow: 0 0 10px rgba(100, 0, 0, 0.5); /* Add shadow for emphasis */
+        }
+
+        .select-button {
+            padding: 15px 30px;
+            background-color: #333;
+            font-size: 2rem;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .select-button:hover {
+            background-color: #1f3a55;
+        }
+
+        .job-title {
+         	margin-top: 5px; /* Space between image and job title */
+    		font-size: 0.9rem; /* Adjust font size as needed */
+    		color: white; /* Change text color to white */
+    		background-color: #333; /* Background color for the box */
+    		padding: 0px; /* Padding inside the box */
+    		border-radius: 5px; /* Rounded corners (optional) */
+    		text-align: center; /* Center the text (optional) */
+        	
+        }
+    </style>
+</head>
+<body>
+
+    <div class="character-selection">
+        <h1>Select Your Character</h1> <!-- This heading will be styled -->
+        <div class="character-images">
+            <div class="character-container">
+                <img src="hero1/hero_down_2.png" alt="Hero 1" data-name="Hero 1" data-id="1">
+                <div class="job-title">Student</div>
+            </div>
+            <div class="character-container">
+                <img src="hero2/hero_down_2.png" alt="Hero 2" data-name="Hero 2" data-id="2">
+                <div class="job-title">Teacher</div>
+            </div>
+            <div class="character-container">
+                <img src="hero3/hero_down_2.png" alt="Hero 3" data-name="Hero 3" data-id="3">
+                <div class="job-title">Artist</div>
+            </div>
+            <div class="character-container">
+                <img src="hero4/hero_down_2.png" alt="Hero 4" data-name="Hero 4" data-id="4">
+                <div class="job-title">Shopkeeper</div>
+            </div>
+            <div class="character-container">
+                <img src="hero5/hero_down_2.png" alt="Hero 5" data-name="Hero 5" data-id="5">
+                <div class="job-title">Barber</div>
+            </div>
+            <div class="character-container">
+                <img src="hero6/hero_down_2.png" alt="Hero 6" data-name="Hero 6" data-id="6">
+                <div class="job-title">Farmer</div>
+            </div>
+        </div>
+        <button class="select-button" id="selectButton">Select</button>
+    </div>
+
+    <script>
+        const characterImages = document.querySelectorAll('.character-images img');
+        const selectButton = document.getElementById('selectButton');
+        let selectedCharacterId = null;
+
+        characterImages.forEach(image => {
+            image.addEventListener('click', function() {
+                // Remove selected class from all images
+                characterImages.forEach(img => img.classList.remove('selected'));
+                
+                // Add selected class to the clicked image
+                this.classList.add('selected');
+
+                // Store the selected character ID
+                selectedCharacterId = this.getAttribute('data-id');
+            });
+        });
+
+        selectButton.addEventListener('click', function() {
+            if (selectedCharacterId) {
+                // Redirect to character_take.html with character ID as a query parameter
+                window.location.href = `main.html?characterId=${selectedCharacterId}`;
+            } else {
+                alert("Please select a character first.");
+            }
+        });
+    </script>
+
+</body>
+</html>

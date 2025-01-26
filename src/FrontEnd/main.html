@@ -153,6 +153,13 @@
         #sendChatButton:hover {
             background-color: #1f3a55;
         }
+        
+        .highlight {
+            border: 2px solid yellow; /* Change color and thickness as needed */
+            border-radius: 5px; /* Optional: add rounded corners */
+            position: relative; /* Needed for positioning */
+            z-index: 10; /* Ensure it appears above other elements */
+        }
 
         .table-container {
             margin-top: 40px;
@@ -324,29 +331,34 @@
             return nameList.splice(randomIndex, 1)[0]; // Remove and return the name
         }
 
-        // Function to create a character object
-        function createCharacter(heroType, initialRow, initialCol) {
+        // Function to create a character object (modified to include "You")
+        function createCharacter(heroType, initialRow, initialCol, isPlayerCharacter = false) {
             let name, role;
 
             // Assign name and role based on hero type
-            if (heroType === 1) {
-                name = getRandomName(femaleNames);
-                role = "Student";
-            } else if (heroType === 2) {
-                name = getRandomName(femaleNames);
-                role = "Teacher";
-            } else if (heroType === 3) {
-                name = getRandomName(femaleNames);
-                role = "Artist";
-            } else if (heroType === 4) {
-                name = getRandomName(femaleNames);
-                role = "Shopkeeper";
-            } else if (heroType === 5) {
-                name = getRandomName(maleNames);
-                role = "Barber";
-            } else if (heroType === 6) {
-                name = getRandomName(maleNames);
-                role = "Farmer";
+            if (isPlayerCharacter) {
+                name = "You"; // Label as "You"
+                role = "Player"; // You can set a specific role for the player if needed
+            } else {
+                if (heroType === 1) {
+                    name = getRandomName(femaleNames);
+                    role = "Student";
+                } else if (heroType === 2) {
+                    name = getRandomName(femaleNames);
+                    role = "Teacher";
+                } else if (heroType === 3) {
+                    name = getRandomName(femaleNames);
+                    role = "Artist";
+                } else if (heroType === 4) {
+                    name = getRandomName(femaleNames);
+                    role = "Shopkeeper";
+                } else if (heroType === 5) {
+                    name = getRandomName(maleNames);
+                    role = "Barber";
+                } else if (heroType === 6) {
+                    name = getRandomName(maleNames);
+                    role = "Farmer";
+                }
             }
 
             return {
@@ -359,7 +371,7 @@
             };
         }
 
-        // Function to initialize characters
+        // Function to initialize characters (modified to add character based on ID)
         async function initializeCharacters() {
             try {
                 const response = await fetch('http://localhost:3000/characters');
@@ -389,13 +401,23 @@
                     await saveCharactersToServer(characters);
                 }
 
+                // Check if a characterId was sent from character_select.html
+                const urlParams = new URLSearchParams(window.location.search);
+                const characterId = urlParams.get('characterId');
+                if (characterId) {
+                    const heroType = parseInt(characterId); // Convert to integer
+                    const initialRow = 0; // Set to row 0
+                    const initialCol = 10; // Set to column 10
+                    const playerCharacter = createCharacter(heroType, initialRow, initialCol, true); // Create "You" character
+                    characters.push(playerCharacter); // Add to characters list
+                }
+
                 // Now render the characters on the map
                 renderCharacters();
             } catch (error) {
                 console.error('Error fetching characters:', error);
             }
         }
-
 
         // Function to save characters to the server
         async function saveCharactersToServer(charactersToSave) {
@@ -422,6 +444,11 @@
 
                 // Append the character to its initial position
                 table.rows[hero.position.row].cells[hero.position.col].appendChild(hero.element);
+
+                // Check if this character is the player character
+                if (hero.name === "You") {
+                    hero.element.classList.add('highlight'); // Add highlight class
+                }
 
                 // Add event listener to each character
                 hero.element.addEventListener('click', async (event) => {
@@ -496,7 +523,7 @@
             if (!message) return; // Don't send empty messages
 
             // Clear input field
-            chatInput.value = ''; 
+            chatInput.value = '';
 
             // Display user message with separator
             chatOutput.innerHTML += `<div class="message user-message"><strong>You:</strong> ${message}</div>`;
