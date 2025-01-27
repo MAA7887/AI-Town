@@ -3,7 +3,7 @@
 - **User Story 1**:  
     As a user, I want to log in to the website and select my desired character from the available city characters so that I can have a personalized experience.
 - **User Story 2**:  
-    As a user, I want to add, remove, or rearrange urban elements such as buildings, parks, rivers, and public spaces like markets so that I can design the city according to my preferences.
+    As a user, I want to add urban elements such as buildings, parks, rivers, and public spaces like markets so that I can design the city according to my preferences.
 
 **Interaction Mechanics**
 

@@ -5,7 +5,7 @@
 1. **Character Selection**:  
     Each user must log into the platform and select their desired character from the available ones in the simulated city.
 2. **Modification of Urban Elements**:  
-    Users should be able to add, remove, or rearrange urban elements such as buildings, parks, rivers, public spaces (e.g., markets).
+    Users should be able to add urban elements such as buildings, parks, rivers, public spaces (e.g., markets).
 
 **Interactions**
 

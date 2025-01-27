@@ -4,7 +4,7 @@ Welcome to **AI-Town**! This is an interactive virtual world populated by AI-pow
 
 ## 🌆 Project Overview
 
-AI-Town allows users to step into a virtual town filled with diverse AI characters, each with unique personalities, behaviors, and storylines. Users can interact with these characters, customize their own avatars, and even alter the town's appearance to suit their preferences. The project focuses on creating an immersive AI-driven experience, where dynamic interactions and a constantly evolving world bring the town to life.
+AI-Town allows users to step into a virtual town filled with diverse AI characters, each with unique personalities. Users can interact with these characters, customize their own avatars, and even alter the town's appearance to suit their preferences. The project focuses on creating an immersive AI-driven experience, where dynamic interactions and a constantly evolving world bring the town to life.
 
 ## 🎮 Key Features
 
