@@ -4,12 +4,14 @@ import cors from 'cors';
 import fetch from 'node-fetch'; // For version 3.x
 import db from './database.js'; // Import the SQLite database
 
+
 const app = express();
 const PORT = 3000;
 
 // Middleware
 app.use(cors()); // Allow cross-origin requests
 app.use(bodyParser.json()); // Parse JSON bodies
+
 
 // Define characters and their roles
 const characters = {
@@ -40,6 +42,8 @@ const characters = {
     // Add more characters as needed
 };
 
+
+
 // Function to get AI response from the local Python server
 async function getAIResponse(prompt) {
     try {
@@ -64,6 +68,8 @@ async function getAIResponse(prompt) {
     }
 }
 
+
+
 // Function to get character history from the database
 function get_character_history(name) {
     return new Promise((resolve, reject) => {
@@ -79,6 +85,8 @@ function get_character_history(name) {
     });
 }
 
+
+
 // Function to add a message to character history in the database
 function add_to_character_history(name, message) {
     return new Promise((resolve, reject) => {
@@ -91,6 +99,8 @@ function add_to_character_history(name, message) {
         });
     });
 }
+
+
 
 // Endpoint to handle chat history requests
 app.post('/chat/history', (req, res) => {
@@ -107,6 +117,8 @@ app.post('/chat/history', (req, res) => {
             res.status(500).json({ response: 'Error retrieving chat history.' });
         });
 }); 
+
+
 
 // Endpoint to handle chat between characters
 app.post('/chat', async (req, res) => {
@@ -138,6 +150,7 @@ app.post('/chat', async (req, res) => {
         res.status(500).json({ response: 'Internal server error.' });
     }
 });
+
 
 
 // Endpoint to handle event in town
@@ -268,6 +281,8 @@ app.post('/login', (req, res) => {
     );
 });
 
+
+
 // Endpoint to register a new user
 app.post('/register', (req, res) => {
     const { username, password } = req.body;
@@ -286,6 +301,8 @@ app.post('/register', (req, res) => {
         }
     );
 });
+
+
 
 // Start server
 app.listen(PORT, () => {
