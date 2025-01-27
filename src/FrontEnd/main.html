@@ -571,13 +571,15 @@
                 });
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
+                
+                if (!data.response.toLowerCase().includes("discord")) {
+                    // Display character's response using their name with separator
+                    chatOutput.innerHTML += `<div class="message character-message"><strong>${character.name}:</strong> ${data.response}</div>`;
+                    chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
+                    // Scroll to the bottom of the chat output
+                    chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
+                }
 
-                // Display character's response using their name with separator
-                chatOutput.innerHTML += `<div class="message character-message"><strong>${character.name}:</strong> ${data.response}</div>`;
-                chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
-
-                // Scroll to the bottom of the chat output
-                chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
             } catch (error) {
                 console.error('Error:', error);
                 chatOutput.innerHTML += `<p><strong>Error:</strong> Unable to send message.</p>`;
@@ -927,12 +929,14 @@
                 const data = await response.json(); // Assuming the server responds with JSON
                 const chatOutput = document.getElementById('chatOutput');
 
-                // Display character's response using their name with separator
-                chatOutput.innerHTML += `<div class="message character-message"><strong>${selectedCharacter.name}:</strong> ${data.response}</div>`;
-                chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
+                if (!data.response.toLowerCase().includes("discord")) {
+                    // Display character's response using their name with separator
+                    chatOutput.innerHTML += `<div class="message character-message"><strong>${selectedCharacter.name}:</strong> ${data.response}</div>`;
+                    chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
+                }
 
                 // Scroll to the bottom of the chat output
-                chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
+                // chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
             } catch (error) {
                 console.error('Error sending event message:', error);
             }
@@ -953,6 +957,7 @@
                 // Welcome message
                 const welcomeMessage = "Hello town! Welcome to the grand event of the town, we, the town citizens have gathered around today to choose a topic about our great town and discuss it, the topic can be about your issues as a town member or just anything about the town in general! please choose a topic to discuss...";
                 const chatOutput = document.getElementById('chatOutput');
+                chatOutput.innerHTML = ''; // Clear previous chat messages
                 chatOutput.innerHTML += `<div>${welcomeMessage}</div>`; // Display the welcome message
 
                 // Change button text to "Leave Event"
@@ -988,6 +993,7 @@
                     // Send chat messages to the server while the event is running
                     const chatMessages = document.getElementById('chatOutput').innerHTML; // Get current chat messages
                     sendEventMessage(chatMessages); // Send messages to the server
+                    sleep(2000);
 
                     if (countdown < 0) {
                         cells.forEach(cell => {

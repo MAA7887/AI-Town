@@ -155,7 +155,9 @@ app.post('/event', async (req, res) => {
         const prompt = `Your name is ${name}, ${character.personality}\nYou are currently participating in an event held
          in the town, if the event has just started and no one has still chose a topic for the discussion you be the one 
          that chooses a topic! and otherwise just read the previous messages of the town members and generate your response 
-         based on them. whoever's message you are responding to from the messages, mention their name in your response so the 
+         based on them. if you have talked before in the event don't start your message with greetings just continue with 
+         the chat. and also don't just repeat what another town member said before you, be creative with your answers. 
+         whoever's message you are responding to from the messages, mention their name in your response so the 
          person knows that somebody is talking with them (if the persons name is "You" just refer to them as "the player") and 
          if anybody addressed you in their message also respond to them appropriatly (if you want). also it is not necessary to respond to 
          anyone in the town even if your name is mentioned, you can instead just share your general idea about the topic. your
