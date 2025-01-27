@@ -670,20 +670,31 @@
             const { row, col } = position;
 
             if (element_name === 'house') {
-                // house occupies a 3x2 area
+                // House occupies a 3x2 area
                 for (let r = row; r < row + 2; r++) {
                     for (let c = col; c < col + 3; c++) {
                         cells.push({ row: r, col: c });
                     }
                 }
-            } else {
-                // Other elements occupy a 2x2 area
+            } else if (element_name === 'mansion') {
+                // Mansion occupies a 6x3 area
+                for (let r = row; r < row + 3; r++) {
+                    for (let c = col; c < col + 6; c++) {
+                        cells.push({ row: r, col: c });
+                    }
+                }
+            } else if (element_name === 'tree' || element_name === 'lake' || element_name === 'windmill') {
+                // Tree, lake, and windmill occupy a 2x2 area
                 for (let r = row; r < row + 2; r++) {
                     for (let c = col; c < col + 2; c++) {
                         cells.push({ row: r, col: c });
                     }
                 }
+            } else if (element_name === 'well') {
+                // Well occupies a 1x1 area
+                cells.push({ row: row, col: col });
             }
+
             return cells;
         }
 
@@ -870,7 +881,6 @@
             }
         }
 
-        // Function to load environmental elements from the server
         async function loadEnvironmentalElements() {
             try {
                 const response = await fetch('http://localhost:3000/city');
@@ -883,26 +893,57 @@
                     if (element_name === 'house') {
                         elementImg = document.createElement('img');
                         elementImg.src = 'map_add_3.png';
-                        elementImg.classList.add('large-element');
+                        elementImg.classList.add('large-element'); // Class for house (3x2)
                         elementImg.style.left = `${col * 30}px`;
                         elementImg.style.top = `${row * 30}px`;
                         tableContainer.appendChild(elementImg);
                         environmentalElements.push({ element_name: 'house', position: { row, col } }); // Track the element
-                    } else {
+                    } else if (element_name === 'mansion') {
                         elementImg = document.createElement('img');
-                        elementImg.src = element_name === 'tree' ? 'map_add_1.png' : 'map_add_2.png';
-                        elementImg.classList.add('small-element');
+                        elementImg.src = 'map_add_4.png'; // Mansion image
+                        elementImg.classList.add('very-large-element'); // Class for mansion (6x3)
                         elementImg.style.left = `${col * 30}px`;
                         elementImg.style.top = `${row * 30}px`;
                         tableContainer.appendChild(elementImg);
-                        environmentalElements.push({ element_name: element_name, position: { row, col } }); // Track the element
+                        environmentalElements.push({ element_name: 'mansion', position: { row, col } }); // Track the element
+                    } else if (element_name === 'tree') {
+                        elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_1.png';
+                        elementImg.classList.add('small-element'); // Class for tree (2x2)
+                        elementImg.style.left = `${col * 30}px`;
+                        elementImg.style.top = `${row * 30}px`;
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'tree', position: { row, col } }); // Track the element
+                    } else if (element_name === 'lake') {
+                        elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_2.png';
+                        elementImg.classList.add('small-element'); // Class for lake (2x2)
+                        elementImg.style.left = `${col * 30}px`;
+                        elementImg.style.top = `${row * 30}px`;
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'lake', position: { row, col } }); // Track the element
+                    } else if (element_name === 'windmill') {
+                        elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_5.png'; // Windmill image
+                        elementImg.classList.add('small-element'); // Class for windmill (2x2)
+                        elementImg.style.left = `${col * 30}px`;
+                        elementImg.style.top = `${row * 30}px`;
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'windmill', position: { row, col } }); // Track the element
+                    } else if (element_name === 'well') {
+                        elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_6.png'; // Well image
+                        elementImg.classList.add('very-small-element'); // Class for well (1x1)
+                        elementImg.style.left = `${col * 30}px`;
+                        elementImg.style.top = `${row * 30}px`;
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'well', position: { row, col } }); // Track the element
                     }
                 });
             } catch (error) {
                 console.error('Error loading environmental elements:', error);
             }
         }
-
         // Load environmental elements on page load
         loadEnvironmentalElements();
 
