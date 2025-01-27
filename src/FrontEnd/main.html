@@ -272,6 +272,25 @@
             object-fit: cover; /* Ensure the image covers the area without distortion */
             z-index: 5; /* Ensure it's above the table */
         }
+
+        /* Style for the mansion (6x3 environmental element) */
+        .very-large-element {
+            position: absolute; /* Position absolutely within the table container */
+            width: 180px; /* 6 cells wide (6 * 30px) */
+            height: 90px; /* 3 cells tall (3 * 30px) */
+            object-fit: cover; /* Ensure the image covers the area without distortion */
+            z-index: 5; /* Ensure it's above the table */
+        }
+
+        /* Style for the well (1x1 environmental element) */
+        .very-small-element {
+            position: absolute; /* Position absolutely within the table container */
+            width: 30px; /* 1 cell wide (1 * 30px) */
+            height: 30px; /* 1 cell tall (1 * 30px) */
+            object-fit: cover; /* Ensure the image covers the area without distortion */
+            z-index: 5; /* Ensure it's above the table */
+        }
+
     </style>
 </head>
 <body>
@@ -287,7 +306,10 @@
         <div class="sidebar">
             <img src="map_add_1.png" id="treeIcon" alt="Tree" title="Tree" />
             <img src="map_add_2.png" id="lakeIcon" alt="Lake" title="Lake" />
-            <img src="map_add_3.png" id="houseIcon" alt="house" title="house" /> <!-- New icon added -->
+            <img src="map_add_3.png" id="houseIcon" alt="house" title="house" /> 
+            <img src="map_add_4.png" id="mansionIcon" alt="house" title="mansion" /> 
+            <img src="map_add_5.png" id="windmillIcon" alt="house" title="windmill" /> 
+            <img src="map_add_6.png" id="wellIcon" alt="house" title="well" /> <!-- New icon added -->
         </div>
     </div>
 
@@ -740,7 +762,23 @@
             tableContainer.style.cursor = 'url(map_add_3.png), auto'; // Change cursor to house icon
         });
 
-        // Place environmental element on map click
+        // Add event listeners for the new environmental elements
+        document.getElementById('mansionIcon').addEventListener('click', () => {
+            selectedElement = 'mansion';
+            tableContainer.style.cursor = 'url(map_add_4.png), auto'; // Change cursor to mansion icon
+        });
+
+        document.getElementById('windmillIcon').addEventListener('click', () => {
+            selectedElement = 'windmill';
+            tableContainer.style.cursor = 'url(map_add_5.png), auto'; // Change cursor to windmill icon
+        });
+
+        document.getElementById('wellIcon').addEventListener('click', () => {
+            selectedElement = 'well';
+            tableContainer.style.cursor = 'url(map_add_6.png), auto'; // Change cursor to well icon
+        });
+
+        // Modify the placement logic in the tableContainer click event
         tableContainer.addEventListener('click', async (event) => {
             if (selectedElement) {
                 const rect = table.getBoundingClientRect();
@@ -749,7 +787,6 @@
                 const row = Math.floor(y / 30); // Assuming each cell is 30px high
                 const col = Math.floor(x / 30); // Assuming each cell is 30px wide
 
-                // Check if the selected position and the next row and column are valid
                 let elementImg;
                 if (selectedElement === 'house') {
                     // Ensure it fits within bounds for 3 wide and 2 tall
@@ -766,11 +803,11 @@
                         // Save to server
                         await saveElementToServer(selectedElement, row, col);
                     }
-                } else {
-                    // For tree and lake, maintain the 2x2 size
+                } else if (selectedElement === 'tree' || selectedElement === 'lake' || selectedElement === 'windmill') {
+                    // For tree, lake, and windmill, maintain the 2x2 size
                     if (row >= 0 && row < 29 && col >= 0 && col < 49 && !isObstacle(row, col)) {
                         elementImg = document.createElement('img');
-                        elementImg.src = selectedElement === 'tree' ? 'map_add_1.png' : 'map_add_2.png'; // Use the correct image
+                        elementImg.src = selectedElement === 'tree' ? 'map_add_1.png' : selectedElement === 'lake' ? 'map_add_2.png' : 'map_add_5.png'; // Use the correct image
                         elementImg.classList.add('small-element'); // Add class for 2x2 styling
                         elementImg.style.left = `${col * 30}px`; // Position based on cell size
                         elementImg.style.top = `${row * 30}px`; // Position based on cell size
@@ -781,6 +818,36 @@
                         // Save to server
                         await saveElementToServer(selectedElement, row, col);
                     }
+                } else if (selectedElement === 'mansion') {
+                    // Ensure it fits within bounds for 6 wide and 3 tall
+                    if (row >= 0 && row < 28 && col >= 0 && col < 45 && !isObstacle(row, col)) {
+                        elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_4.png'; // Use the mansion image
+                        elementImg.classList.add('very-large-element'); // Add class for mansion styling
+                        elementImg.style.left = `${col * 30}px`; // Position based on cell size
+                        elementImg.style.top = `${row * 30}px`; // Position based on cell size
+
+                        // Append the image to the table container
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'mansion', position: { row, col } }); // Track the element
+                        // Save to server
+                        await saveElementToServer(selectedElement, row, col);
+                    }
+                } else if (selectedElement === 'well') {
+                    // For well, maintain the 1x1 size
+                    if (row >= 0 && row < 30 && col >= 0 && col < 50 && !isObstacle(row, col)) {
+                        elementImg = document.createElement('img');
+                        elementImg.src = 'map_add_6.png'; // Use the well image
+                        elementImg.classList.add('very-small-element'); // Add class for well styling
+                        elementImg.style.left = `${col * 30}px`; // Position based on cell size
+                        elementImg.style.top = `${row * 30}px`; // Position based on cell size
+
+                        // Append the image to the table container
+                        tableContainer.appendChild(elementImg);
+                        environmentalElements.push({ element_name: 'well', position: { row, col } }); // Track the element
+                        // Save to server
+                        await saveElementToServer(selectedElement, row, col);
+                    }
                 }
 
                 // Reset the selected element so it can't be placed again until re-selected
@@ -788,7 +855,6 @@
                 tableContainer.style.cursor = 'grab'; // Reset cursor back to grab
             }
         });
-
         // Function to save environmental element to the server
         async function saveElementToServer(elementName, row, col) {
             try {
@@ -1087,6 +1153,7 @@
             // Allow image selection again
             document.body.style.userSelect = '';
         });
+
     </script>
 
 </body>
