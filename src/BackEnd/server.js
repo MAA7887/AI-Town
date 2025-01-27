@@ -140,6 +140,40 @@ app.post('/chat', async (req, res) => {
 });
 
 
+// Endpoint to handle event in town
+app.post('/event', async (req, res) => {
+    const { message, name, characterRole } = req.body;
+
+    // Get the character's context and history
+    const character = characters[characterRole];
+    if (!character) {
+        return res.status(400).json({ response: 'Character not found.' });
+    }
+
+    try {
+        // Construct the prompt with personality and previous messages
+        const prompt = `Your name is ${name}, ${character.personality}\nYou are currently participating in an event held
+         in the town, if the event has just started and no one has still chose a topic for the discussion you be the one 
+         that chooses a topic! and otherwise just read the previous messages of the town members and generate your response 
+         based on them. whoever's message you are responding to from the messages, mention their name in your response so the 
+         person knows that somebody is talking with them (if the persons name is "You" just refer to them as "the player") and 
+         if anybody addressed you in their message also respond to them appropriatly (if you want). also it is not necessary to respond to 
+         anyone in the town even if your name is mentioned, you can instead just share your general idea about the topic. your
+         responses should not be more than 1 paragraph (try even less specially at the beginning of the conversation). these are 
+         the chats in the town event for now (ignore the html code parts in the messages just read the actual messages):\n ${message}}`;
+
+        // Get AI response
+        const aiResponse = await getAIResponse(prompt);
+
+        // Respond to the client
+        res.json({ response: aiResponse });
+    } catch (error) {
+        console.error('Error in /event endpoint:', error);
+        res.status(500).json({ response: 'Internal server error.' });
+    }
+});
+
+
 
 // Endpoint to handle character retrieval
 app.get('/characters', (req, res) => {

@@ -324,7 +324,7 @@
     <script>
         let isMoving = true; // Flag to control character movement
         let timer; // Variable to hold the timer interval
-        let countdown = 10; // Countdown time in seconds
+        let countdown = 60; // Countdown time in seconds
         let isDraggingEnabled = true;
         const characters = []; // Array to hold character objects
         const environmentalElements = []; // Array to hold environmental elements
@@ -895,6 +895,50 @@
 
         let isInEvent = false; // Track whether the user is currently in the event
 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function sendEventMessage(message) {
+            // Select a random character from the characters array
+            const randomIndex = Math.floor(Math.random() * characters.length);
+            const selectedCharacter = characters[randomIndex];
+
+            // Prepare the data to send to the server
+            const dataToSend = {
+                message: message,
+                characterName: selectedCharacter.name,
+                characterRole: selectedCharacter.role
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/event', {
+                    method: 'POST', // Send a POST request
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dataToSend) // Send the character name, role, and message as JSON
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json(); // Assuming the server responds with JSON
+                const chatOutput = document.getElementById('chatOutput');
+
+                // Display character's response using their name with separator
+                chatOutput.innerHTML += `<div class="message character-message"><strong>${selectedCharacter.name}:</strong> ${data.response}</div>`;
+                chatOutput.innerHTML += `<div class="separator"></div>`; // Add separator
+
+                // Scroll to the bottom of the chat output
+                chatOutput.scrollTop = chatOutput.scrollHeight; // Ensure the latest message is visible
+            } catch (error) {
+                console.error('Error sending event message:', error);
+            }
+        }
+
+
         document.getElementById('joinEventButton').addEventListener('click', () => {
             const joinEventButton = document.getElementById('joinEventButton');
             const cells = document.querySelectorAll('table td'); // Select all table cells
@@ -905,6 +949,11 @@
                 chatContainer.style.display = 'block'; // Show chat container
                 const chatHeader = document.getElementById('chatHeader');
                 chatHeader.innerHTML = `<strong>The Event</strong>`; // Set the header to "The Event"
+
+                // Welcome message
+                const welcomeMessage = "Hello town! Welcome to the grand event of the town, we, the town citizens have gathered around today to choose a topic about our great town and discuss it, the topic can be about your issues as a town member or just anything about the town in general! please choose a topic to discuss...";
+                const chatOutput = document.getElementById('chatOutput');
+                chatOutput.innerHTML += `<div>${welcomeMessage}</div>`; // Display the welcome message
 
                 // Change button text to "Leave Event"
                 joinEventButton.innerText = "Leave event";
@@ -920,7 +969,7 @@
                 isDraggingEnabled = false;
 
                 // Start countdown
-                countdown = 10; // Reset countdown
+                countdown = 60; // Reset countdown
                 const timerDisplay = document.createElement('div'); // Create a timer display
                 timerDisplay.id = 'timerDisplay';
                 timerDisplay.style.position = 'absolute';
@@ -936,6 +985,10 @@
                     alignCharacters();
                     countdown--;
 
+                    // Send chat messages to the server while the event is running
+                    const chatMessages = document.getElementById('chatOutput').innerHTML; // Get current chat messages
+                    sendEventMessage(chatMessages); // Send messages to the server
+
                     if (countdown < 0) {
                         cells.forEach(cell => {
                             cell.style.background = ''; // Reset to default, or set a specific color/image
@@ -949,7 +1002,6 @@
                         isDraggingEnabled = true;
                         isInEvent = false; // Reset event status
                         joinEventButton.innerText = "Join event"; // Reset button text
-                        const chatContainer = document.getElementById('chatContainer');
                         chatContainer.style.display = 'none'; // Hide chat container
                     }
                 }, 1000); // Update every second
